@@ -1,15 +1,3 @@
-#!/usr/local/bin/python3
-# CSCI B551 Fall 2019
-#
-# Authors: PLEASE PUT YOUR NAMES AND USERIDS HERE
-#
-# based on skeleton code by D. Crandall, 11/2019
-#
-# ./break_code.py : attack encryption
-#  A more sophisticated genetic algorimn is used to break the code. Currently it runs correctly but is not efficient enough to solve in ten minutes.
-#  Even if I improving run time I'm not sure if it'll be able to solve it in ten minutes, so this implementation is on hold while I attempt other things
-#
-
 
 import random
 import math
@@ -19,20 +7,20 @@ import encode
 import string
 
 
-def get_cypher_list():
+def get_cipher_list():
     letters = string.ascii_lowercase
     return [list(''.join(random.sample(letters, len(letters)))) for i in range(0, 30)]
 
 
 #Select random parents in cypher
-def weighted_random_choice(corpus_dict, text, cypher_list):
-    max_fit = total_fitness(corpus_dict, text, cypher_list)
+def weighted_random_choice(corpus_dict, text, cipher_list):
+    max_fit = total_fitness(corpus_dict, text, cipher_list)
     pick = random.uniform(0, max_fit)
     current = 0
-    for cypher in cypher_list:
+    for cipher in cipher_list:
         current += fitness(corpus_dict, text, cypher)
         if current > pick:
-            return cypher
+            return cipher
 
 
 def one_point_crossover(parent1, parent2):
@@ -42,14 +30,14 @@ def one_point_crossover(parent1, parent2):
     return child1, child2
 
 
-def encode_text(text, cypher):
+def encode_text(text, cipher):
     final_string = ""
     for i in text:
         if i is " ":
             final_string = final_string + " "
         else:
             pos = string.ascii_lowercase.index(i)
-            final_string = final_string + cypher[pos]
+            final_string = final_string + cipher[pos]
     return final_string
 
 
@@ -61,9 +49,9 @@ def total_fitness(corpus_dict, text, population):
     return total
 
 
-def fitness(corpus_dict, text, cypher):
+def fitness(corpus_dict, text, cipher):
     final_score = 0
-    encoded_dict = get_prob_scores(encode_text(text, cypher))
+    encoded_dict = get_prob_scores(encode_text(text, cipher))
     for p in encoded_dict:
         if p in corpus_dict:
             final_score = final_score + corpus_dict.get(p)
@@ -71,8 +59,8 @@ def fitness(corpus_dict, text, cypher):
 
 
 #Find best suited parents
-def top_population(cypher_list, corpus_dict, text):
-    population = sorted(cypher_list, key = lambda x: fitness(corpus_dict, text, x), reverse = True)
+def top_population(cipher_list, corpus_dict, text):
+    population = sorted(cipher_list, key = lambda x: fitness(corpus_dict, text, x), reverse = True)
     parent_length = int(0.1 * len(population))
     parents = population[:parent_length]
     return parents
@@ -81,23 +69,23 @@ def top_population(cypher_list, corpus_dict, text):
 # put your code here!
 def break_code(encoded, corpus):
     corpus_dict = get_prob_scores(corpus)
-    cypher_list = get_cypher_list()
+    cipher_list = get_cipher_list()
     generation = 0
     while(generation < 200):
-        new_cypher_generation = top_population(cypher_list, corpus_dict, encoded)
-        while(len(new_cypher_generation) < len(cypher_list)):
-                parent1 = weighted_random_choice(corpus_dict, encoded, cypher_list)
-                parent2 = weighted_random_choice(corpus_dict, encoded, cypher_list)
+        new_cipher_generation = top_population(cipher_list, corpus_dict, encoded)
+        while(len(new_cipher_generation) < len(cipher_list)):
+                parent1 = weighted_random_choice(corpus_dict, encoded, cipher_list)
+                parent2 = weighted_random_choice(corpus_dict, encoded, cipher_list)
                 child1, child2 = one_point_crossover(parent1, parent2)
-                new_cypher_generation += [mutate(child1)]
-                new_cypher_generation += [mutate(child2)]
+                new_cipher_generation += [mutate(child1)]
+                new_cipher_generation += [mutate(child2)]
 
-        cypher_list = new_cypher_generation
+        cipher_list = new_cipher_generation
         generation += 1
 
-    print(fitness(corpus_dict, encoded, cypher_list[0]))
+    print(fitness(corpus_dict, encoded, cipher_list[0]))
     print(fitness(corpus_dict, corpus, (string.ascii_lowercase)))
-    return encode_text(encoded, cypher_list[0])
+    return encode_text(encoded, cipher_list[0])
 
 
 def mutate(child):
